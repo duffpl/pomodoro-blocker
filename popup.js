@@ -215,6 +215,10 @@ document.querySelectorAll(".input-row").forEach((row) => {
     if (e.target.matches(".chip")) {
       input.value = e.target.dataset.preset;
       markActiveChips();
+    } else if (e.target.matches(".step")) {
+      const current = parseInt(input.value, 10) || 0;
+      input.value = Math.max(1, current + parseInt(e.target.dataset.step, 10));
+      markActiveChips();
     }
   });
 });

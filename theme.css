@@ -83,6 +83,7 @@
 /* Input + preset chips row */
 .input-row {
   display: flex;
+  flex-wrap: wrap;
   gap: 6px;
   align-items: center;
 }
@@ -115,6 +116,19 @@
   outline: none;
   border-color: var(--accent);
 }
+.step {
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--text-secondary);
+  background: var(--chip-bg);
+  border: none;
+  border-radius: 8px;
+  padding: 8px 9px;
+  cursor: pointer;
+  white-space: nowrap;
+}
+.step:hover { background: var(--chip-bg-hover); }
 .chip {
   font-family: inherit;
   font-size: 13px;
