@@ -94,7 +94,10 @@ function updateBadge(current) {
   chrome.action.setBadgeText({ text: String(min) });
 }
 
+let stateGeneration = 0;
+
 async function startSession(settings, blocklist) {
+  stateGeneration++;
   const schedule = buildSchedule(Date.now(), settings);
   await chrome.storage.local.set({ session: { schedule }, settings, blocklist });
   await applyBlockRules(blocklist);
@@ -105,6 +108,7 @@ async function startSession(settings, blocklist) {
 }
 
 async function endSession(completed) {
+  stateGeneration++;
   await chrome.storage.local.set({ session: null });
   await clearBlockRules();
   await chrome.alarms.clear("phase-end");
@@ -117,8 +121,9 @@ async function endSession(completed) {
 // announce=true only when called from the phase-end alarm, so restarts and
 // worker wake-ups don't re-fire notifications.
 async function syncState({ announce = false } = {}) {
+  const gen = stateGeneration;
   const { session, blocklist } = await chrome.storage.local.get(DEFAULTS);
-  if (!session) return;
+  if (!session || gen !== stateGeneration) return;
   const current = currentPhase(session);
   if (!current) {
     await endSession(announce);
@@ -127,14 +132,15 @@ async function syncState({ announce = false } = {}) {
   if (current.phase === "working") {
     await applyBlockRules(blocklist);
     await sweepTabs(blocklist);
-    if (announce) notify("Back to work", "Break's over — sites are blocked again.");
+    if (announce && gen === stateGeneration) notify("Back to work", "Break's over — sites are blocked again.");
   } else {
     await clearBlockRules();
-    if (announce) {
+    if (announce && gen === stateGeneration) {
       const min = Math.round((current.endsAt - Date.now()) / 60000);
       notify("Break time", `Sites unblocked for ${min} minutes.`);
     }
   }
+  if (gen !== stateGeneration) return;
   chrome.alarms.create("phase-end", { when: current.endsAt });
   chrome.alarms.create("tick", { periodInMinutes: 1 });
   updateBadge(current);
