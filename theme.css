@@ -39,8 +39,9 @@
   background: var(--accent);
 }
 .brand-icon {
-  width: 34px;
-  height: auto;
+  width: 26px;
+  height: 26px;
+  display: block;
 }
 .brand-name {
   font-size: 17px;

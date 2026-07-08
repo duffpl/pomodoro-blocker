@@ -93,6 +93,16 @@
     <div class="timer-ends" id="timer-ends"></div>
   </div>
 
+  <!-- Session timeline: one .seg-bar per work period, .seg-dot between them
+       for breaks — built by popup.js from the session schedule. -->
+  <div class="timeline">
+    <div class="timeline-head">
+      <span class="timeline-title">Session</span>
+      <span class="timeline-elapsed" id="timeline-elapsed"></span>
+    </div>
+    <div class="timeline-track" id="timeline-track"></div>
+  </div>
+
   <div class="blocking-card">
     <div class="blocking-title" id="blocking-count"></div>
     <div class="blocking-list" id="blocking-list"></div>

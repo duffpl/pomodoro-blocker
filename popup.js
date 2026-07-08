@@ -63,8 +63,46 @@ async function render() {
   const ends = new Date(last.endsAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
   $("timer-ends").textContent = `session ends ${ends}`;
 
+  // Session timeline: a bar per work period, a dot per break.
+  const startedAt = session.startedAt ?? session.schedule[0].endsAt;
+  const segs = session.schedule.map((p, idx) => ({
+    phase: p.phase,
+    startsAt: idx > 0 ? session.schedule[idx - 1].endsAt : startedAt,
+    endsAt: p.endsAt
+  }));
+  $("timeline-track").replaceChildren(
+    ...segs.map((seg) => {
+      if (seg.phase === "working") {
+        const bar = document.createElement("div");
+        bar.className = "seg-bar";
+        seg.el = document.createElement("div");
+        seg.el.className = "seg-fill";
+        bar.appendChild(seg.el);
+        return bar;
+      }
+      seg.el = document.createElement("div");
+      seg.el.className = "seg-dot";
+      return seg.el;
+    })
+  );
+  const totalMin = Math.round((last.endsAt - startedAt) / 60000);
+  const updateTimeline = (now) => {
+    for (const seg of segs) {
+      if (seg.phase === "working") {
+        const dur = seg.endsAt - seg.startsAt;
+        const frac = dur > 0 ? Math.min(1, Math.max(0, (now - seg.startsAt) / dur)) : 0;
+        seg.el.style.width = (frac * 100).toFixed(1) + "%";
+      } else {
+        seg.el.classList.toggle("passed", now >= seg.endsAt);
+      }
+    }
+    const elapsedMin = Math.min(totalMin, Math.max(0, Math.floor((now - startedAt) / 60000)));
+    $("timeline-elapsed").textContent = `${elapsedMin} / ${totalMin} min`;
+  };
+
   const update = () => {
     const now = Date.now();
+    updateTimeline(now);
     const i = session.schedule.findIndex((p) => p.endsAt > now);
     if (i === -1) {
       // Session just ended while popup was open. Stop ticking instead of
