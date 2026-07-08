@@ -39,8 +39,8 @@
   background: var(--accent);
 }
 .brand-icon {
-  width: 26px;
-  height: 26px;
+  width: 30px;
+  height: 30px;
   display: block;
 }
 .brand-name {
@@ -63,7 +63,7 @@
 .field {
   display: flex;
   flex-direction: column;
-  gap: 8px;
+  gap: 9px;
 }
 .field-label-row {
   display: flex;
@@ -80,32 +80,6 @@
   color: var(--text-faint);
 }
 
-/* Input + preset chips row */
-.input-row {
-  display: flex;
-  gap: 6px;
-  align-items: center;
-}
-.chip-row {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 6px;
-}
-.num-input {
-  width: 64px;
-  font-family: inherit;
-  font-size: 15px;
-  font-weight: 600;
-  color: var(--text);
-  padding: 8px 10px;
-  border: 1px solid var(--border);
-  border-radius: 8px;
-  background: var(--surface);
-}
-.num-input:focus {
-  outline: none;
-  border-color: var(--accent);
-}
 .text-input {
   width: 100%;
   font-family: inherit;
@@ -119,36 +93,6 @@
 .text-input:focus {
   outline: none;
   border-color: var(--accent);
-}
-.step {
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--text-secondary);
-  background: var(--chip-bg);
-  border: none;
-  border-radius: 8px;
-  padding: 8px 9px;
-  cursor: pointer;
-  white-space: nowrap;
-}
-.step:hover { background: var(--chip-bg-hover); }
-.chip {
-  font-family: inherit;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-secondary);
-  background: var(--chip-bg);
-  border: none;
-  border-radius: 999px;
-  padding: 7px 14px;
-  cursor: pointer;
-}
-.chip:hover { background: var(--chip-bg-hover); }
-.chip.active {
-  font-weight: 600;
-  color: var(--accent);
-  background: var(--accent-tint);
 }
 
 /* Blocked sites */
@@ -171,18 +115,24 @@
 
 /* Buttons */
 .btn-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   font-family: inherit;
   font-size: 15px;
   font-weight: 600;
   color: #fff;
   background: var(--accent);
   border: none;
-  border-radius: 10px;
-  padding: 12px;
+  border-radius: 12px;
+  padding: 13px;
   cursor: pointer;
   margin-top: 2px;
+  box-shadow: 0 4px 14px rgba(216, 68, 46, 0.32);
 }
 .btn-primary:hover { background: var(--accent-hover); }
+.btn-play { display: block; }
 
 .btn-secondary {
   font-family: inherit;
@@ -204,14 +154,6 @@
   text-align: center;
 }
 .settings-link:hover { color: var(--accent); }
-
-.setup-hint {
-  margin: 0;
-  font-size: 13px;
-  color: var(--text-faint);
-}
-.setup-hint a { color: var(--accent); text-decoration: none; }
-.setup-hint a:hover { text-decoration: underline; }
 
 .error-msg {
   font-size: 13px;

@@ -1,4 +1,4 @@
-/* Pomodoro Blocker — popup layout (design 2a); tokens/components in theme.css */
+/* Pomodoro Blocker — popup layout (design 3a); tokens/components in theme.css */
 
 body {
   width: 340px;
@@ -11,6 +11,123 @@ body {
   flex-direction: column;
   gap: 16px;
 }
+
+/* ---- Setup state ---- */
+
+.brand-title {
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+}
+.brand-tagline {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+/* Stepper (− / value / +) */
+.stepper {
+  display: flex;
+  align-items: stretch;
+  gap: 8px;
+}
+.stepper-btn {
+  width: 46px;
+  font-family: inherit;
+  font-size: 20px;
+  font-weight: 500;
+  color: #8A857E;
+  background: var(--chip-bg);
+  border: none;
+  border-radius: 11px;
+  cursor: pointer;
+  line-height: 1;
+}
+.stepper-btn:hover {
+  background: var(--accent-tint);
+  color: var(--accent);
+}
+.stepper-value {
+  flex: 1;
+  display: flex;
+  align-items: baseline;
+  justify-content: center;
+  gap: 4px;
+  background: var(--surface);
+  border: 1px solid var(--border-soft);
+  border-radius: 11px;
+  padding: 9px 0;
+}
+.stepper-num {
+  font-size: 17px;
+  font-weight: 700;
+  color: var(--text);
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+.stepper-unit {
+  font-size: 12px;
+  color: var(--text-faint);
+}
+
+/* Quick presets */
+.presets {
+  display: flex;
+  gap: 6px;
+}
+.preset {
+  flex: 1;
+  font-family: inherit;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--text-muted);
+  background: transparent;
+  border: 1px solid var(--border-soft);
+  border-radius: 999px;
+  padding: 6px 0;
+  cursor: pointer;
+}
+.preset:hover { border-color: #D3CFC8; }
+.preset.active {
+  font-weight: 700;
+  color: var(--accent);
+  background: var(--accent-tint);
+  border-color: #EFC6BD;
+}
+
+/* Session summary */
+.summary {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: var(--surface-alt);
+  border-radius: 11px;
+  padding: 11px 13px;
+}
+.summary-icon {
+  width: 20px;
+  height: 20px;
+  display: block;
+  flex: none;
+  opacity: 0.9;
+}
+.summary-text {
+  font-size: 13px;
+  color: var(--text-secondary);
+  line-height: 1.35;
+}
+.summary-text b { color: var(--text); }
+
+/* Blocked-sites note */
+.sites-note {
+  font-size: 13px;
+  color: var(--text-muted);
+}
+.sites-note a {
+  color: var(--accent);
+  font-weight: 600;
+  text-decoration: none;
+}
+.sites-note a:hover { text-decoration: underline; }
 
 /* ---- Running state ---- */
 

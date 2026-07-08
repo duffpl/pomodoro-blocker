@@ -13,13 +13,44 @@ function show(el, on) {
   el.style.display = on ? "flex" : "none";
 }
 
-// Highlight the chip matching its input's current value.
-function markActiveChips() {
-  document.querySelectorAll(".num-input").forEach((input) => {
-    input.closest(".field").querySelectorAll(".chip").forEach((chip) => {
-      chip.classList.toggle("active", chip.dataset.preset === input.value);
+// Stepper values live in .stepper-num spans (id = the field name).
+const getVal = (id) => parseInt($(id).textContent, 10) || 0;
+const setVal = (id, v) => { $(id).textContent = String(Math.max(1, v)); };
+
+// Highlight the preset chip matching each stepper's current value, and
+// refresh the computed summary.
+function refreshSetup() {
+  document.querySelectorAll(".stepper").forEach((stepper) => {
+    const value = $(stepper.dataset.field).textContent;
+    stepper.parentElement.querySelectorAll(".preset").forEach((preset) => {
+      preset.classList.toggle("active", preset.dataset.preset === value);
     });
   });
+  updateSummary();
+}
+
+function plural(n, word) {
+  return `${n} ${word}${n === 1 ? "" : "s"}`;
+}
+
+// Focus blocks / breaks derived the same way buildSchedule splits time:
+// each full "break every" cycle is one work period + one break, then the
+// remainder is a final work period. Total is the session length (breaks sit
+// inside it, so they don't extend the clock).
+function updateSummary() {
+  const sessionMin = getVal("session-length");
+  const workMin = getVal("break-every");
+  const breakMin = getVal("break-length");
+  let blocks = 1, breaks = 0, left = sessionMin;
+  if (workMin > breakMin) {
+    while (left > workMin) { blocks++; breaks++; left -= workMin; }
+  }
+  const h = Math.floor(sessionMin / 60);
+  const m = sessionMin % 60;
+  const total = h ? (m ? `${h}h ${m}m` : `${h}h`) : `${m}m`;
+  $("summary-blocks").textContent = plural(blocks, "focus block");
+  $("summary-breaks").textContent = plural(breaks, "break");
+  $("summary-total").textContent = `${total} total`;
 }
 
 let timer = null;
@@ -44,10 +75,10 @@ async function render() {
   if (!session) {
     show($("setup-view"), true);
     show($("running-view"), false);
-    $("session-length").value = settings.sessionMin;
-    $("break-every").value = settings.workMin;
-    $("break-length").value = settings.breakMin;
-    markActiveChips();
+    setVal("session-length", settings.sessionMin);
+    setVal("break-every", settings.workMin);
+    setVal("break-length", settings.breakMin);
+    refreshSetup();
     return;
   }
 
@@ -150,9 +181,9 @@ async function render() {
 $("start-btn").addEventListener("click", async () => {
   $("error").textContent = "";
   const settings = {
-    sessionMin: parseInt($("session-length").value, 10),
-    workMin: parseInt($("break-every").value, 10),
-    breakMin: parseInt($("break-length").value, 10)
+    sessionMin: getVal("session-length"),
+    workMin: getVal("break-every"),
+    breakMin: getVal("break-length")
   };
   if (Object.values(settings).some((v) => !Number.isInteger(v) || v < 1)) {
     $("error").textContent = "All durations must be positive whole minutes.";
@@ -207,22 +238,23 @@ async function stopSession() {
 }
 $("stop-confirmed").addEventListener("click", stopSession);
 
-document.querySelectorAll(".num-input").forEach((input) => {
-  const field = input.closest(".field");
-  input.addEventListener("input", markActiveChips);
+document.querySelectorAll(".field").forEach((field) => {
+  const stepper = field.querySelector(".stepper");
+  if (!stepper) return;
+  const id = stepper.dataset.field;
+  const step = parseInt(stepper.dataset.step, 10);
   field.addEventListener("click", (e) => {
-    if (e.target.matches(".chip")) {
-      input.value = e.target.dataset.preset;
-      markActiveChips();
-    } else if (e.target.matches(".step")) {
-      const current = parseInt(input.value, 10) || 0;
-      input.value = Math.max(1, current + parseInt(e.target.dataset.step, 10));
-      markActiveChips();
+    if (e.target.matches(".preset")) {
+      setVal(id, parseInt(e.target.dataset.preset, 10));
+      refreshSetup();
+    } else if (e.target.matches(".stepper-btn")) {
+      setVal(id, getVal(id) + parseInt(e.target.dataset.dir, 10) * step);
+      refreshSetup();
     }
   });
 });
 
-document.querySelectorAll(".settings-link, #blocklist-settings-link").forEach((link) => {
+document.querySelectorAll(".settings-link, #settings-link").forEach((link) => {
   link.addEventListener("click", (e) => {
     e.preventDefault();
     chrome.runtime.openOptionsPage();
