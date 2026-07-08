@@ -15,10 +15,9 @@ function show(el, on) {
 
 // Highlight the chip matching its input's current value.
 function markActiveChips() {
-  document.querySelectorAll(".input-row").forEach((row) => {
-    const value = row.querySelector(".num-input").value;
-    row.querySelectorAll(".chip").forEach((chip) => {
-      chip.classList.toggle("active", chip.dataset.preset === value);
+  document.querySelectorAll(".num-input").forEach((input) => {
+    input.closest(".field").querySelectorAll(".chip").forEach((chip) => {
+      chip.classList.toggle("active", chip.dataset.preset === input.value);
     });
   });
 }
@@ -208,10 +207,10 @@ $("stop-confirmed").addEventListener("click", async () => {
   render();
 });
 
-document.querySelectorAll(".input-row").forEach((row) => {
-  const input = row.querySelector(".num-input");
+document.querySelectorAll(".num-input").forEach((input) => {
+  const field = input.closest(".field");
   input.addEventListener("input", markActiveChips);
-  row.addEventListener("click", (e) => {
+  field.addEventListener("click", (e) => {
     if (e.target.matches(".chip")) {
       input.value = e.target.dataset.preset;
       markActiveChips();

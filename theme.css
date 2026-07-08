@@ -83,9 +83,13 @@
 /* Input + preset chips row */
 .input-row {
   display: flex;
-  flex-wrap: wrap;
   gap: 6px;
   align-items: center;
+}
+.chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
 }
 .num-input {
   width: 64px;
