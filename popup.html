@@ -1,48 +1,114 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-  <meta charset="utf-8">
-  <link rel="stylesheet" href="popup.css">
+<meta charset="UTF-8">
+<title>Pomodoro Blocker</title>
+<link rel="stylesheet" href="theme.css">
+<link rel="stylesheet" href="popup.css">
 </head>
 <body>
-  <div id="idle-view" hidden>
-    <h1>Pomodoro Blocker</h1>
-    <label>Session length (min) <input id="sessionMin" type="number" min="1">
-      <span class="presets" data-target="sessionMin">
-        <button type="button" class="preset">30</button>
-        <button type="button" class="preset">60</button>
-        <button type="button" class="preset">120</button>
-      </span>
-    </label>
-    <label>Break every (min) <input id="workMin" type="number" min="1"></label>
-    <label>Break length (min) <input id="breakMin" type="number" min="1">
-      <span class="presets" data-target="breakMin">
-        <button type="button" class="preset">5</button>
-        <button type="button" class="preset">15</button>
-      </span>
-    </label>
-    <label>Blocked sites (one per line)
-      <textarea id="blocklist" rows="5" placeholder="reddit.com"></textarea>
-    </label>
-    <div id="error" class="error"></div>
-    <button id="start">Start session</button>
-  </div>
 
-  <div id="running-view" hidden>
-    <h1 id="phase-label"></h1>
-    <div id="countdown"></div>
-    <div id="session-info"></div>
-    <button id="stop">Stop early…</button>
-    <div id="stop-confirm" hidden>
-      <p>Type <b>I give up</b> to stop:</p>
-      <input id="stop-phrase" type="text" autocomplete="off">
-      <button id="stop-confirmed" disabled>Stop session</button>
+<!-- STATE 1: SETUP (shown when no session is running) -->
+<div id="setup-view" style="display: flex; flex-direction: column; gap: 16px;">
+
+  <div class="header">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <div class="brand-name">Pomodoro Blocker</div>
     </div>
   </div>
 
-  <a id="open-options" href="#">Settings</a>
+  <div class="field">
+    <div class="field-label-row">
+      <label class="field-label" for="session-length">Session length</label>
+      <span class="field-hint">minutes</span>
+    </div>
+    <div class="input-row">
+      <input class="num-input" id="session-length" type="number" min="1">
+      <button class="chip" data-preset="30">30</button>
+      <button class="chip" data-preset="60">60</button>
+      <button class="chip" data-preset="120">120</button>
+    </div>
+  </div>
 
-  <script src="domains.js"></script>
-  <script src="popup.js"></script>
+  <div class="field">
+    <div class="field-label-row">
+      <label class="field-label" for="break-every">Break every</label>
+      <span class="field-hint">minutes</span>
+    </div>
+    <div class="input-row">
+      <input class="num-input" id="break-every" type="number" min="1">
+      <button class="chip" data-preset="25">25</button>
+      <button class="chip" data-preset="30">30</button>
+      <button class="chip" data-preset="50">50</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <div class="field-label-row">
+      <label class="field-label" for="break-length">Break length</label>
+      <span class="field-hint">minutes</span>
+    </div>
+    <div class="input-row">
+      <input class="num-input" id="break-length" type="number" min="1">
+      <button class="chip" data-preset="5">5</button>
+      <button class="chip" data-preset="15">15</button>
+    </div>
+  </div>
+
+  <div class="field">
+    <div class="field-label-row">
+      <label class="field-label" for="blocked-sites">Blocked sites</label>
+      <span class="field-hint">one per line</span>
+    </div>
+    <textarea class="sites-textarea" id="blocked-sites" rows="4" placeholder="reddit.com"></textarea>
+  </div>
+
+  <div id="error" class="error-msg"></div>
+  <button class="btn-primary" id="start-btn">Start session</button>
+  <a class="settings-link" href="#" id="settings-link">Settings</a>
+
+</div>
+
+<!-- STATE 2: RUNNING (shown while a session is active) -->
+<div id="running-view" style="display: none; flex-direction: column; gap: 16px;">
+
+  <div class="header">
+    <div class="brand">
+      <div class="brand-dot"></div>
+      <div class="brand-name">Pomodoro Blocker</div>
+    </div>
+    <span class="status-badge" id="status-badge">Focusing</span>
+  </div>
+
+  <div class="timer-wrap">
+    <svg width="164" height="164" viewBox="0 0 164 164">
+      <circle class="ring-track" cx="82" cy="82" r="74" fill="none" stroke-width="8"></circle>
+      <circle class="ring-progress" id="ring-progress" cx="82" cy="82" r="74" fill="none" stroke-width="8"></circle>
+    </svg>
+    <div class="timer-overlay">
+      <div class="timer-time" id="timer-time"></div>
+      <div class="timer-sub" id="timer-sub"></div>
+    </div>
+    <div class="timer-ends" id="timer-ends"></div>
+  </div>
+
+  <div class="blocking-card">
+    <div class="blocking-title" id="blocking-count"></div>
+    <div class="blocking-list" id="blocking-list"></div>
+  </div>
+
+  <button class="btn-secondary" id="end-btn">End session early</button>
+
+  <div id="stop-confirm" class="stop-confirm">
+    <p>Type <b>I give up</b> to stop:</p>
+    <input class="text-input" id="stop-phrase" type="text" autocomplete="off">
+    <button class="btn-primary" id="stop-confirmed" disabled>Stop session</button>
+  </div>
+
+</div>
+
+<script src="domains.js"></script>
+<script src="popup.js"></script>
 </body>
 </html>

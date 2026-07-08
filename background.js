@@ -96,8 +96,9 @@ function updateBadge(current) {
 }
 
 async function startSession(settings, blocklist) {
-  const schedule = buildSchedule(Date.now(), settings);
-  await chrome.storage.local.set({ session: { schedule }, settings, blocklist });
+  const startedAt = Date.now();
+  const schedule = buildSchedule(startedAt, settings);
+  await chrome.storage.local.set({ session: { schedule, startedAt }, settings, blocklist });
   await applyBlockRules(blocklist);
   await sweepTabs(blocklist);
   chrome.alarms.create("phase-end", { when: schedule[0].endsAt });

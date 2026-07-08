@@ -1,10 +1,26 @@
 const $ = (id) => document.getElementById(id);
 
+const RING_CIRCUMFERENCE = 465; // 2π·74, matches the SVG in popup.html
+
 function fmt(ms) {
   const total = Math.max(0, Math.ceil(ms / 1000));
   const m = Math.floor(total / 60);
   const s = total % 60;
   return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+function show(el, on) {
+  el.style.display = on ? "flex" : "none";
+}
+
+// Highlight the chip matching its input's current value.
+function markActiveChips() {
+  document.querySelectorAll(".input-row").forEach((row) => {
+    const value = row.querySelector(".num-input").value;
+    row.querySelectorAll(".chip").forEach((chip) => {
+      chip.classList.toggle("active", chip.dataset.preset === value);
+    });
+  });
 }
 
 let timer = null;
@@ -17,53 +33,79 @@ async function render() {
   });
   clearInterval(timer);
 
-  $("stop-confirm").hidden = true;
+  show($("stop-confirm"), false);
   $("stop-phrase").value = "";
   $("stop-confirmed").disabled = true;
 
   if (!session) {
-    $("idle-view").hidden = false;
-    $("running-view").hidden = true;
-    $("sessionMin").value = settings.sessionMin;
-    $("workMin").value = settings.workMin;
-    $("breakMin").value = settings.breakMin;
-    $("blocklist").value = blocklist.join("\n");
+    show($("setup-view"), true);
+    show($("running-view"), false);
+    $("session-length").value = settings.sessionMin;
+    $("break-every").value = settings.workMin;
+    $("break-length").value = settings.breakMin;
+    $("blocked-sites").value = blocklist.join("\n");
+    markActiveChips();
     return;
   }
 
-  $("idle-view").hidden = true;
-  $("running-view").hidden = false;
+  show($("setup-view"), false);
+  show($("running-view"), true);
+
+  $("blocking-list").replaceChildren(
+    ...blocklist.map((d) => {
+      const tag = document.createElement("span");
+      tag.className = "site-tag";
+      tag.textContent = d;
+      return tag;
+    })
+  );
+  const last = session.schedule[session.schedule.length - 1];
+  const ends = new Date(last.endsAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+  $("timer-ends").textContent = `session ends ${ends}`;
+
   const update = () => {
     const now = Date.now();
-    const current = session.schedule.find((p) => p.endsAt > now);
-    if (!current) {
+    const i = session.schedule.findIndex((p) => p.endsAt > now);
+    if (i === -1) {
       // Session just ended while popup was open. Stop ticking instead of
-      // recursing into render(): storage may still hold the expired
-      // session for up to ~2s until the background phase-end alarm clears
-      // it, and re-rendering into another running-view branch would spin
-      // up a fresh setInterval every second, hammering storage.get in a
-      // tight loop until the background finally nulls the session.
+      // recursing into render(): storage may still hold the expired session
+      // until the background phase-end alarm clears it.
       clearInterval(timer);
-      $("phase-label").textContent = "Session complete";
-      $("countdown").textContent = "0:00";
+      $("status-badge").textContent = "Done";
+      $("timer-time").textContent = "0:00";
+      $("timer-sub").textContent = "session complete";
+      $("blocking-count").textContent = "Sites unblocked";
+      $("ring-progress").style.strokeDashoffset = RING_CIRCUMFERENCE;
       return;
     }
-    $("phase-label").textContent = current.phase === "working" ? "Focus time" : "Break";
-    $("countdown").textContent = fmt(current.endsAt - now);
-    const last = session.schedule[session.schedule.length - 1];
-    const ends = new Date(last.endsAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
-    $("session-info").textContent = `Session ends at ${ends}`;
+    const current = session.schedule[i];
+    const working = current.phase === "working";
+    const isLast = i === session.schedule.length - 1;
+    $("timer-time").textContent = fmt(current.endsAt - now);
+    $("status-badge").textContent = working ? "Focusing" : "Break";
+    $("timer-sub").textContent = working
+      ? (isLast ? "until session ends" : "until break")
+      : "until focus resumes";
+    $("blocking-count").textContent = working
+      ? `Blocking ${blocklist.length} site${blocklist.length === 1 ? "" : "s"}`
+      : "Break — sites unblocked";
+
+    // Ring drains as the phase elapses (offset 0 = full ring).
+    const startsAt = i > 0 ? session.schedule[i - 1].endsAt : session.startedAt;
+    const duration = current.endsAt - startsAt;
+    const elapsed = duration > 0 ? Math.min(1, Math.max(0, (now - startsAt) / duration)) : 0;
+    $("ring-progress").style.strokeDashoffset = String(RING_CIRCUMFERENCE * elapsed);
   };
   update();
   timer = setInterval(update, 1000);
 }
 
-$("start").addEventListener("click", async () => {
+$("start-btn").addEventListener("click", async () => {
   $("error").textContent = "";
   const settings = {
-    sessionMin: parseInt($("sessionMin").value, 10),
-    workMin: parseInt($("workMin").value, 10),
-    breakMin: parseInt($("breakMin").value, 10)
+    sessionMin: parseInt($("session-length").value, 10),
+    workMin: parseInt($("break-every").value, 10),
+    breakMin: parseInt($("break-length").value, 10)
   };
   if (Object.values(settings).some((v) => !Number.isInteger(v) || v < 1)) {
     $("error").textContent = "All durations must be positive whole minutes.";
@@ -75,7 +117,7 @@ $("start").addEventListener("click", async () => {
   }
   let blocklist;
   try {
-    blocklist = parseDomains($("blocklist").value);
+    blocklist = parseDomains($("blocked-sites").value);
   } catch (e) {
     $("error").textContent = e.message;
     return;
@@ -93,8 +135,8 @@ $("start").addEventListener("click", async () => {
   render();
 });
 
-$("stop").addEventListener("click", () => {
-  $("stop-confirm").hidden = false;
+$("end-btn").addEventListener("click", () => {
+  show($("stop-confirm"), true);
   $("stop-phrase").focus();
 });
 
@@ -107,13 +149,18 @@ $("stop-confirmed").addEventListener("click", async () => {
   render();
 });
 
-document.querySelectorAll(".presets").forEach((group) => {
-  group.addEventListener("click", (e) => {
-    if (e.target.matches(".preset")) $(group.dataset.target).value = e.target.textContent;
+document.querySelectorAll(".input-row").forEach((row) => {
+  const input = row.querySelector(".num-input");
+  input.addEventListener("input", markActiveChips);
+  row.addEventListener("click", (e) => {
+    if (e.target.matches(".chip")) {
+      input.value = e.target.dataset.preset;
+      markActiveChips();
+    }
   });
 });
 
-$("open-options").addEventListener("click", (e) => {
+$("settings-link").addEventListener("click", (e) => {
   e.preventDefault();
   chrome.runtime.openOptionsPage();
 });
