@@ -82,16 +82,21 @@
   </div>
 
   <div class="timer-wrap">
-    <svg width="164" height="164" viewBox="0 0 164 164">
-      <circle class="ring-track" cx="82" cy="82" r="74" fill="none" stroke-width="8"></circle>
-      <circle class="ring-progress" id="ring-progress" cx="82" cy="82" r="74" fill="none" stroke-width="8"></circle>
-    </svg>
-    <div class="timer-overlay">
-      <div class="timer-time" id="timer-time"></div>
-      <div class="timer-sub" id="timer-sub"></div>
+    <div class="ring-click" id="ring-click" title="Pause / resume">
+      <svg width="164" height="164" viewBox="0 0 164 164">
+        <circle class="ring-track" cx="82" cy="82" r="74" fill="none" stroke-width="8"></circle>
+        <circle class="ring-progress" id="ring-progress" cx="82" cy="82" r="74" fill="none" stroke-width="8"></circle>
+      </svg>
+      <div class="timer-overlay">
+        <div class="pause-mark" id="pause-mark">| |</div>
+        <div class="timer-time" id="timer-time"></div>
+        <div class="timer-sub" id="timer-sub"></div>
+      </div>
     </div>
     <div class="timer-ends" id="timer-ends"></div>
   </div>
+
+  <button class="btn-secondary" id="pause-btn">Pause</button>
 
   <!-- Session timeline: one .seg-bar per work period, .seg-dot between them
        for breaks — built by popup.js from the session schedule. -->

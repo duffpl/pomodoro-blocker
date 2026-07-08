@@ -105,8 +105,13 @@ async function render() {
     $("timeline-elapsed").textContent = `${elapsedMin} / ${totalMin} min`;
   };
 
+  const paused = !!session.pausedAt;
+  $("pause-mark").classList.toggle("on", paused);
+  $("pause-btn").textContent = paused ? "Resume" : "Pause";
+
   const update = () => {
-    const now = Date.now();
+    // While paused the schedule is frozen at pausedAt, so render that instant.
+    const now = session.pausedAt ?? Date.now();
     updateTimeline(now);
     const i = session.schedule.findIndex((p) => p.endsAt > now);
     if (i === -1) {
@@ -125,7 +130,7 @@ async function render() {
     const working = current.phase === "working";
     const isLast = i === session.schedule.length - 1;
     $("timer-time").textContent = fmt(current.endsAt - now);
-    $("status-badge").textContent = working ? "Focusing" : "Break";
+    $("status-badge").textContent = paused ? "Paused" : working ? "Focusing" : "Break";
     $("timer-sub").textContent = working
       ? (isLast ? "until session ends" : "until break")
       : "until focus resumes";
@@ -140,7 +145,7 @@ async function render() {
     $("ring-progress").style.strokeDashoffset = String(RING_CIRCUMFERENCE * elapsed);
   };
   update();
-  timer = setInterval(update, 1000);
+  if (!paused) timer = setInterval(update, 1000);
 }
 
 $("start-btn").addEventListener("click", async () => {
@@ -177,6 +182,16 @@ $("start-btn").addEventListener("click", async () => {
   }
   render();
 });
+
+async function togglePause() {
+  const { session } = await chrome.storage.local.get({ session: null });
+  if (!session) return;
+  const cmd = session.pausedAt ? "resume" : "pause";
+  await chrome.runtime.sendMessage({ cmd }).catch(() => {});
+  render();
+}
+$("pause-btn").addEventListener("click", togglePause);
+$("ring-click").addEventListener("click", togglePause);
 
 $("end-btn").addEventListener("click", () => {
   show($("stop-confirm"), true);

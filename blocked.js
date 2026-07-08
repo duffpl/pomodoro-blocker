@@ -12,17 +12,22 @@ function displayUrl(u) {
 }
 
 async function update() {
-  const { session, blockMessage, autoReturn } = await chrome.storage.local.get({
+  const { session, blockMessage, autoReturn, unlockOnPause } = await chrome.storage.local.get({
     session: null,
     blockMessage: "",
-    autoReturn: false
+    autoReturn: false,
+    unlockOnPause: false
   });
   document.getElementById("headline").textContent = blockMessage || "Nope. Not yet.";
   const el = document.getElementById("detail");
   const origin = document.getElementById("origin");
-  const now = Date.now();
+  // While paused the schedule is frozen at pausedAt, so judge phases there.
+  const paused = !!(session && session.pausedAt);
+  const now = paused ? session.pausedAt : Date.now();
   const current = session && session.schedule.find((p) => p.endsAt > now);
   const working = current && current.phase === "working";
+  // Whether the DNR rules are actually installed right now.
+  const blocking = working && !(paused && unlockOnPause);
 
   if (!session) {
     el.textContent = "No session running. You're free to go.";
@@ -35,7 +40,10 @@ async function update() {
     const m = Math.floor(total / 60);
     const s = String(total % 60).padStart(2, "0");
     const isLast = current === session.schedule[session.schedule.length - 1];
-    el.textContent = isLast ? `Session ends in ${m}:${s}.` : `Next break in ${m}:${s}.`;
+    const left = isLast ? `Session ends in ${m}:${s}.` : `Next break in ${m}:${s}.`;
+    el.textContent = paused
+      ? (blocking ? `Paused. ${left}` : "Paused — sites are unlocked. Go browse.")
+      : left;
   }
 
   if (!fromUrl) {
@@ -43,7 +51,7 @@ async function update() {
     return;
   }
   origin.hidden = false;
-  if (working) {
+  if (blocking) {
     origin.textContent = `Waiting for you: ${displayUrl(fromUrl)}`;
     return;
   }

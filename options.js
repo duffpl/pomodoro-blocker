@@ -1,14 +1,16 @@
 const $ = (id) => document.getElementById(id);
 
 async function load() {
-  const { blocklist, blockMessage, autoReturn } = await chrome.storage.local.get({
+  const { blocklist, blockMessage, autoReturn, unlockOnPause } = await chrome.storage.local.get({
     blocklist: [],
     blockMessage: "",
-    autoReturn: false
+    autoReturn: false,
+    unlockOnPause: false
   });
   $("blocklist").value = blocklist.join("\n");
   $("message").value = blockMessage;
   $("auto-return").checked = autoReturn;
+  $("unlock-on-pause").checked = unlockOnPause;
 }
 
 $("save").addEventListener("click", async () => {
@@ -25,7 +27,8 @@ $("save").addEventListener("click", async () => {
   }
   await chrome.storage.local.set({
     blockMessage: $("message").value.trim(),
-    autoReturn: $("auto-return").checked
+    autoReturn: $("auto-return").checked,
+    unlockOnPause: $("unlock-on-pause").checked
   });
   // The background applies the new blocklist to a running work phase
   // (re-installs DNR rules and sweeps tabs), so edits take effect live.

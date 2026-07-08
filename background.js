@@ -80,7 +80,8 @@ async function sweepTabs(blocklist) {
 const DEFAULTS = {
   session: null,
   settings: { sessionMin: 60, workMin: 30, breakMin: 5 },
-  blocklist: []
+  blocklist: [],
+  unlockOnPause: false
 };
 
 function notify(title, message) {
@@ -129,12 +130,43 @@ async function endSession(completed) {
   if (completed) notify("Session complete", "Nice work. Sites are unblocked.");
 }
 
+// Pausing freezes the schedule: pausedAt marks the freeze point, and resume
+// shifts every absolute timestamp forward by the paused duration. Sites stay
+// blocked while paused unless the unlockOnPause option is set.
+async function pauseSession() {
+  const { session, unlockOnPause } = await chrome.storage.local.get(DEFAULTS);
+  if (!session || session.pausedAt || !currentPhase(session)) return;
+  session.pausedAt = Date.now();
+  await chrome.storage.local.set({ session });
+  await chrome.alarms.clear("phase-end");
+  await chrome.alarms.clear("tick");
+  if (unlockOnPause) await clearBlockRules();
+  chrome.action.setBadgeBackgroundColor({ color: "#616161" });
+  chrome.action.setBadgeText({ text: "||" });
+}
+
+async function resumeSession() {
+  const { session } = await chrome.storage.local.get(DEFAULTS);
+  if (!session?.pausedAt) return;
+  const delta = Date.now() - session.pausedAt;
+  const resumed = {
+    startedAt: session.startedAt + delta,
+    schedule: session.schedule.map((p) => ({ ...p, endsAt: p.endsAt + delta }))
+  };
+  await chrome.storage.local.set({ session: resumed });
+  await syncState();
+}
+
 // Blocklist edits from the options page apply live: if a work phase is
-// running, re-install the rules and sweep tabs right away.
+// running (and actually blocking), re-install the rules and sweep tabs.
 async function setBlocklist(blocklist) {
   await chrome.storage.local.set({ blocklist });
-  const { session } = await chrome.storage.local.get(DEFAULTS);
-  if (currentPhase(session)?.phase === "working") {
+  const { session, unlockOnPause } = await chrome.storage.local.get(DEFAULTS);
+  const now = session?.pausedAt ?? Date.now();
+  const blocking =
+    currentPhase(session, now)?.phase === "working" &&
+    !(session?.pausedAt && unlockOnPause);
+  if (blocking) {
     await applyBlockRules(blocklist);
     await sweepTabs(blocklist);
   }
@@ -144,8 +176,25 @@ async function setBlocklist(blocklist) {
 // announce=true only when called from the phase-end alarm, so restarts and
 // worker wake-ups don't re-fire notifications.
 async function syncState({ announce = false } = {}) {
-  const { session, blocklist } = await chrome.storage.local.get(DEFAULTS);
+  const { session, blocklist, unlockOnPause } = await chrome.storage.local.get(DEFAULTS);
   if (!session) return;
+  if (session.pausedAt) {
+    // Frozen at pausedAt: judge the phase at that instant (real time may
+    // have run far past the stored endsAt values), restore the paused
+    // blocking state, and make sure no alarms fire until resume.
+    const frozen = currentPhase(session, session.pausedAt);
+    if (frozen?.phase === "working" && !unlockOnPause) {
+      await applyBlockRules(blocklist);
+      await sweepTabs(blocklist);
+    } else {
+      await clearBlockRules();
+    }
+    await chrome.alarms.clear("phase-end");
+    await chrome.alarms.clear("tick");
+    chrome.action.setBadgeBackgroundColor({ color: "#616161" });
+    chrome.action.setBadgeText({ text: "||" });
+    return;
+  }
   const current = currentPhase(session);
   if (!current) {
     await endSession(announce);
@@ -195,6 +244,8 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   serialize(async () => {
     if (msg.cmd === "start") await startSession(msg.settings, msg.blocklist);
     else if (msg.cmd === "stop") await endSession(false);
+    else if (msg.cmd === "pause") await pauseSession();
+    else if (msg.cmd === "resume") await resumeSession();
     else if (msg.cmd === "set-blocklist") await setBlocklist(msg.blocklist);
   }).then(
     () => sendResponse({ ok: true }),

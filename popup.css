@@ -31,13 +31,29 @@ body {
   transform-origin: center;
   transition: stroke-dashoffset 1s linear;
 }
+.ring-click {
+  position: relative;
+  width: 164px;
+  height: 164px;
+  cursor: pointer;
+}
 .timer-overlay {
-  margin-top: -108px;
+  position: absolute;
+  inset: 0;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 2px;
 }
+.pause-mark {
+  display: none;
+  font-size: 15px;
+  font-weight: 700;
+  letter-spacing: 1px;
+  color: var(--accent);
+}
+.pause-mark.on { display: block; }
 .timer-time {
   font-size: 36px;
   font-weight: 700;
@@ -50,7 +66,7 @@ body {
   color: var(--text-faint);
 }
 .timer-ends {
-  margin-top: 66px;
+  margin-top: 10px;
   font-size: 13px;
   color: var(--text-faint);
 }
