@@ -66,7 +66,7 @@
 
   <div id="error" class="error-msg"></div>
   <button class="btn-primary" id="start-btn">Start session</button>
-  <a class="settings-link" href="#" id="settings-link">Settings</a>
+  <a class="settings-link" href="#">Settings</a>
 
 </div>
 
@@ -104,8 +104,16 @@
   </div>
 
   <div class="blocking-card">
-    <div class="blocking-title" id="blocking-count"></div>
+    <div class="blocking-head">
+      <div class="blocking-title" id="blocking-count"></div>
+      <a class="edit-sites-link" href="#" id="edit-sites">Edit</a>
+    </div>
     <div class="blocking-list" id="blocking-list"></div>
+    <div class="sites-edit" id="sites-edit">
+      <textarea class="sites-textarea" id="sites-edit-input" rows="4"></textarea>
+      <div class="error-msg" id="sites-edit-error"></div>
+      <button class="btn-primary" id="sites-edit-apply">Apply</button>
+    </div>
   </div>
 
   <button class="btn-secondary" id="end-btn">End session early</button>
@@ -115,6 +123,8 @@
     <input class="text-input" id="stop-phrase" type="text" autocomplete="off">
     <button class="btn-primary" id="stop-confirmed" disabled>Stop session</button>
   </div>
+
+  <a class="settings-link" href="#">Settings</a>
 
 </div>
 

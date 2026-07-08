@@ -37,6 +37,11 @@ async function render() {
   $("stop-phrase").value = "";
   $("stop-confirmed").disabled = true;
 
+  show($("sites-edit"), false);
+  $("blocking-list").style.display = "";
+  $("edit-sites").textContent = "Edit";
+  $("sites-edit-error").textContent = "";
+
   if (!session) {
     show($("setup-view"), true);
     show($("running-view"), false);
@@ -198,9 +203,48 @@ document.querySelectorAll(".input-row").forEach((row) => {
   });
 });
 
-$("settings-link").addEventListener("click", (e) => {
+document.querySelectorAll(".settings-link").forEach((link) => {
+  link.addEventListener("click", (e) => {
+    e.preventDefault();
+    chrome.runtime.openOptionsPage();
+  });
+});
+
+// Live blocklist editing during a session: the background's set-blocklist
+// command re-installs DNR rules and sweeps tabs mid-work-phase.
+$("edit-sites").addEventListener("click", async (e) => {
   e.preventDefault();
-  chrome.runtime.openOptionsPage();
+  const editing = $("sites-edit").style.display === "flex";
+  if (!editing) {
+    const { blocklist } = await chrome.storage.local.get({ blocklist: [] });
+    $("sites-edit-input").value = blocklist.join("\n");
+  }
+  $("sites-edit-error").textContent = "";
+  show($("sites-edit"), !editing);
+  $("blocking-list").style.display = editing ? "" : "none";
+  $("edit-sites").textContent = editing ? "Edit" : "Cancel";
+});
+
+$("sites-edit-apply").addEventListener("click", async () => {
+  $("sites-edit-error").textContent = "";
+  let blocklist;
+  try {
+    blocklist = parseDomains($("sites-edit-input").value);
+  } catch (e) {
+    $("sites-edit-error").textContent = e.message;
+    return;
+  }
+  if (blocklist.length === 0) {
+    $("sites-edit-error").textContent = "Add at least one site to block.";
+    return;
+  }
+  const resp = await chrome.runtime.sendMessage({ cmd: "set-blocklist", blocklist })
+    .catch((e) => ({ ok: false, error: String(e) }));
+  if (!resp?.ok) {
+    $("sites-edit-error").textContent = `Could not apply: ${resp?.error || "no response"}`;
+    return;
+  }
+  render();
 });
 
 render();
