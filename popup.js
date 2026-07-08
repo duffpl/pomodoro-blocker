@@ -100,7 +100,12 @@ $("start").addEventListener("click", async () => {
     $("error").textContent = "Add at least one site to block.";
     return;
   }
-  await chrome.runtime.sendMessage({ cmd: "start", settings, blocklist });
+  const resp = await chrome.runtime.sendMessage({ cmd: "start", settings, blocklist })
+    .catch((e) => ({ ok: false, error: String(e) }));
+  if (!resp?.ok) {
+    $("error").textContent = `Could not start session: ${resp?.error || "no response"}`;
+    return;
+  }
   render();
 });
 
@@ -114,7 +119,7 @@ $("stop-phrase").addEventListener("input", () => {
 });
 
 $("stop-confirmed").addEventListener("click", async () => {
-  await chrome.runtime.sendMessage({ cmd: "stop" });
+  await chrome.runtime.sendMessage({ cmd: "stop" }).catch(() => {});
   render();
 });
 

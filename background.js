@@ -10,8 +10,9 @@ async function applyBlockRules(blocklist) {
     id: i + 1,
     priority: 1,
     action: { type: "redirect", redirect: { extensionPath: "/blocked.html" } },
-    // "||domain" matches the domain and all its subdomains
-    condition: { urlFilter: "||" + domain, resourceTypes: ["main_frame"] }
+    // "||domain^" matches the domain and all its subdomains; the trailing
+    // separator anchor prevents prefix over-matches (x.com vs x.company.org)
+    condition: { urlFilter: "||" + domain + "^", resourceTypes: ["main_frame"] }
   }));
   try {
     await chrome.declarativeNetRequest.updateDynamicRules({
@@ -168,6 +169,9 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   serialize(async () => {
     if (msg.cmd === "start") await startSession(msg.settings, msg.blocklist);
     else if (msg.cmd === "stop") await endSession(false);
-  }).then(() => sendResponse({ ok: true }));
+  }).then(
+    () => sendResponse({ ok: true }),
+    (e) => sendResponse({ ok: false, error: String(e) })
+  );
   return true; // keep the message channel open for the async response
 });
