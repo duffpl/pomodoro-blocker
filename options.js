@@ -2,7 +2,7 @@ const $ = (id) => document.getElementById(id);
 
 async function load() {
   const { blocklist, blockMessage, autoReturn, unlockOnPause } = await chrome.storage.local.get({
-    blocklist: [],
+    blocklist: DEFAULT_BLOCKLIST,
     blockMessage: "",
     autoReturn: false,
     unlockOnPause: false

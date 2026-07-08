@@ -28,7 +28,7 @@ async function render() {
   const { session, settings, blocklist } = await chrome.storage.local.get({
     session: null,
     settings: { sessionMin: 60, workMin: 30, breakMin: 5 },
-    blocklist: []
+    blocklist: DEFAULT_BLOCKLIST
   });
   clearInterval(timer);
 

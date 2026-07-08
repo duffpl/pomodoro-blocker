@@ -1,4 +1,15 @@
 // Shared by popup.js and options.js (plain script include, no modules).
+
+// Pre-filled on a fresh install (until the user saves their own list).
+const DEFAULT_BLOCKLIST = [
+  "youtube.com",
+  "reddit.com",
+  "x.com",
+  "instagram.com",
+  "pinterest.com"
+];
+
+
 // Normalizes lines to lowercase bare domains; throws on entries that don't
 // look like a domain after stripping scheme/path/leading www.
 function parseDomains(text) {
