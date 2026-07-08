@@ -15,8 +15,11 @@ async function update() {
     el.textContent = "It's break time — this page is just stale. Go browse.";
     return;
   }
-  const min = Math.ceil((current.endsAt - now) / 60000);
-  el.textContent = `Next break in ${min} minute${min === 1 ? "" : "s"}.`;
+  const total = Math.max(0, Math.ceil((current.endsAt - now) / 1000));
+  const m = Math.floor(total / 60);
+  const s = String(total % 60).padStart(2, "0");
+  const isLast = current === session.schedule[session.schedule.length - 1];
+  el.textContent = isLast ? `Session ends in ${m}:${s}.` : `Next break in ${m}:${s}.`;
 }
 
 update();

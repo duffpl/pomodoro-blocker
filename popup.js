@@ -86,7 +86,7 @@ $("start").addEventListener("click", async () => {
     return;
   }
   if (settings.breakMin >= settings.workMin) {
-    $("error").textContent = "Break must be shorter than the work interval.";
+    $("error").textContent = "Break must be shorter than the interval between breaks.";
     return;
   }
   let blocklist;
