@@ -53,7 +53,15 @@ async function render() {
     const now = Date.now();
     const current = session.schedule.find((p) => p.endsAt > now);
     if (!current) {
-      render(); // session just ended while popup was open
+      // Session just ended while popup was open. Stop ticking instead of
+      // recursing into render(): storage may still hold the expired
+      // session for up to ~2s until the background phase-end alarm clears
+      // it, and re-rendering into another running-view branch would spin
+      // up a fresh setInterval every second, hammering storage.get in a
+      // tight loop until the background finally nulls the session.
+      clearInterval(timer);
+      $("phase-label").textContent = "Session complete";
+      $("countdown").textContent = "0:00";
       return;
     }
     $("phase-label").textContent = current.phase === "working" ? "Focus time" : "Break";

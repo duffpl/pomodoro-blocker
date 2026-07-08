@@ -4,6 +4,7 @@
   "version": "0.1.0",
   "description": "Pomodoro focus timer that blocks distracting sites during work intervals.",
   "permissions": ["declarativeNetRequest", "storage", "alarms", "notifications", "tabs"],
+  "host_permissions": ["<all_urls>"],
   "background": { "service_worker": "background.js" },
   "action": { "default_popup": "popup.html", "default_title": "Pomodoro Blocker" },
   "icons": { "128": "icons/icon128.png" },
