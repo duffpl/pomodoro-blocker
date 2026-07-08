@@ -1,6 +1,37 @@
-body { margin: 0; display: flex; align-items: center; justify-content: center; min-height: 100vh; background: #111; color: #eee; font-family: system-ui, sans-serif; }
+/* Light mode: white page, black text. Dark mode: dark page, with the
+   tomato SVG sitting on a white circle so it stays readable. */
+
+body {
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 100vh;
+  background: #fff;
+  color: #111;
+  font-family: system-ui, sans-serif;
+}
 main { text-align: center; }
+#hero {
+  width: 130px;
+  height: 130px;
+  object-fit: contain;
+  display: block;
+  margin: 0 auto 28px;
+}
 h1 { font-size: 56px; margin: 0 0 16px; }
-p { font-size: 18px; color: #aaa; }
-#origin { font-size: 14px; color: #666; max-width: 80vw; margin: 24px auto 0; overflow-wrap: anywhere; }
-#origin a { color: #7fb3e8; }
+p { font-size: 18px; color: #555; }
+#origin { font-size: 14px; color: #888; max-width: 80vw; margin: 24px auto 0; overflow-wrap: anywhere; }
+#origin a { color: #1565c0; }
+
+@media (prefers-color-scheme: dark) {
+  body { background: #111; color: #eee; }
+  p { color: #aaa; }
+  #hero {
+    background: #fff;
+    border-radius: 50%;
+    padding: 20px;
+  }
+  #origin { color: #666; }
+  #origin a { color: #7fb3e8; }
+}
