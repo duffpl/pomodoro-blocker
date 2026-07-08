@@ -33,6 +33,10 @@ async function render() {
   });
   clearInterval(timer);
 
+  $("stop-confirm").hidden = true;
+  $("stop-phrase").value = "";
+  $("stop-confirmed").disabled = true;
+
   if (!session) {
     $("idle-view").hidden = false;
     $("running-view").hidden = true;
