@@ -1,12 +1,14 @@
 const $ = (id) => document.getElementById(id);
 
 async function load() {
-  const { blocklist, blockMessage } = await chrome.storage.local.get({
+  const { blocklist, blockMessage, autoReturn } = await chrome.storage.local.get({
     blocklist: [],
-    blockMessage: ""
+    blockMessage: "",
+    autoReturn: false
   });
   $("blocklist").value = blocklist.join("\n");
   $("message").value = blockMessage;
+  $("auto-return").checked = autoReturn;
 }
 
 $("save").addEventListener("click", async () => {
@@ -21,7 +23,10 @@ $("save").addEventListener("click", async () => {
     status.className = "error";
     return;
   }
-  await chrome.storage.local.set({ blockMessage: $("message").value.trim() });
+  await chrome.storage.local.set({
+    blockMessage: $("message").value.trim(),
+    autoReturn: $("auto-return").checked
+  });
   // The background applies the new blocklist to a running work phase
   // (re-installs DNR rules and sweeps tabs), so edits take effect live.
   const resp = await chrome.runtime

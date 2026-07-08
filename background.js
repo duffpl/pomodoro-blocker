@@ -6,14 +6,27 @@ importScripts("schedule.js");
 
 async function applyBlockRules(blocklist) {
   const existing = await chrome.declarativeNetRequest.getDynamicRules();
-  const rules = blocklist.map((domain, i) => ({
-    id: i + 1,
-    priority: 1,
-    action: { type: "redirect", redirect: { extensionPath: "/blocked.html" } },
-    // "||domain^" matches the domain and all its subdomains; the trailing
-    // separator anchor prevents prefix over-matches (x.com vs x.company.org)
-    condition: { urlFilter: "||" + domain + "^", resourceTypes: ["main_frame"] }
-  }));
+  const blockedBase = chrome.runtime.getURL("blocked.html");
+  const rules = blocklist.map((domain, i) => {
+    const esc = domain.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    return {
+      id: i + 1,
+      priority: 1,
+      action: {
+        type: "redirect",
+        // \1 = the entire original URL, carried raw to the block page so it
+        // can offer a way back once the break starts
+        redirect: { regexSubstitution: blockedBase + "?from=\\1" }
+      },
+      condition: {
+        // host is the domain or a subdomain, then port/path/query or end —
+        // same anchoring as "||domain^" (no prefix over-matches)
+        regexFilter: "^(https?://(?:[^/]*\\.)?" + esc + "(?:[/:?#].*)?)$",
+        isUrlFilterCaseSensitive: false,
+        resourceTypes: ["main_frame"]
+      }
+    };
+  });
   try {
     await chrome.declarativeNetRequest.updateDynamicRules({
       removeRuleIds: existing.map((r) => r.id),
@@ -56,7 +69,8 @@ async function sweepTabs(blocklist) {
       continue;
     }
     if (blocklist.some((d) => host === d || host.endsWith("." + d))) {
-      chrome.tabs.update(tab.id, { url: blockedUrl });
+      // carry the URL raw, matching the DNR redirect's ?from= format
+      chrome.tabs.update(tab.id, { url: blockedUrl + "?from=" + tab.url });
     }
   }
 }
