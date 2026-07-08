@@ -56,13 +56,17 @@ body {
   border: 1px solid var(--border-soft);
   border-radius: 11px;
   padding: 9px 0;
+  cursor: text;
 }
+.stepper-value:focus-within { border-color: var(--accent); }
 .stepper-num {
   font-size: 17px;
   font-weight: 700;
   color: var(--text);
   letter-spacing: -0.01em;
   font-variant-numeric: tabular-nums;
+  min-width: 1ch;
+  outline: none;
 }
 .stepper-unit {
   font-size: 12px;

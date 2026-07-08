@@ -254,6 +254,46 @@ document.querySelectorAll(".field").forEach((field) => {
   });
 });
 
+// Type a value directly: each stepper value is click-to-edit.
+function placeCaretEnd(el) {
+  const range = document.createRange();
+  range.selectNodeContents(el);
+  range.collapse(false);
+  const sel = window.getSelection();
+  sel.removeAllRanges();
+  sel.addRange(range);
+}
+document.querySelectorAll(".stepper-num").forEach((el) => {
+  el.contentEditable = "true";
+  el.setAttribute("inputmode", "numeric");
+  // Clicking anywhere in the value box focuses the number.
+  el.closest(".stepper-value").addEventListener("mousedown", (e) => {
+    if (e.target !== el) { e.preventDefault(); el.focus(); }
+  });
+  el.addEventListener("focus", () => {
+    const range = document.createRange();
+    range.selectNodeContents(el);
+    const sel = window.getSelection();
+    sel.removeAllRanges();
+    sel.addRange(range);
+  });
+  el.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") { e.preventDefault(); el.blur(); }
+  });
+  el.addEventListener("input", () => {
+    const clean = el.textContent.replace(/\D/g, "");
+    if (clean !== el.textContent) {
+      el.textContent = clean;
+      placeCaretEnd(el);
+    }
+    refreshSetup();
+  });
+  el.addEventListener("blur", () => {
+    el.textContent = String(Math.max(1, parseInt(el.textContent, 10) || 1));
+    refreshSetup();
+  });
+});
+
 document.querySelectorAll(".settings-link, #settings-link").forEach((link) => {
   link.addEventListener("click", (e) => {
     e.preventDefault();
