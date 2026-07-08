@@ -160,3 +160,8 @@
   color: var(--accent);
   min-height: 1em;
 }
+/* No reserved space until there's actually a message. */
+.error-msg:empty {
+  display: none;
+  min-height: 0;
+}
