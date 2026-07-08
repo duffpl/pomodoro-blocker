@@ -1,0 +1,10 @@
+body { font-family: system-ui, sans-serif; width: 300px; margin: 0; padding: 16px; }
+h1 { font-size: 18px; margin: 0 0 12px; }
+label { display: block; margin-bottom: 8px; font-size: 13px; }
+input[type="number"] { width: 64px; }
+textarea { width: 100%; box-sizing: border-box; font-family: monospace; }
+button { margin-top: 8px; padding: 6px 12px; cursor: pointer; }
+.error { color: #c62828; font-size: 13px; min-height: 1em; }
+#countdown { font-size: 36px; font-weight: 700; margin: 8px 0; font-variant-numeric: tabular-nums; }
+#session-info { font-size: 13px; color: #555; margin-bottom: 8px; }
+#stop-confirm p { font-size: 13px; margin: 8px 0 4px; }

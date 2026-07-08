@@ -1,0 +1,109 @@
+const $ = (id) => document.getElementById(id);
+
+// Normalizes lines to lowercase bare domains; throws on entries that don't
+// look like a domain after stripping scheme/path/leading www.
+function parseDomains(text) {
+  const domains = [];
+  for (let line of text.split("\n")) {
+    line = line.trim().toLowerCase();
+    if (!line) continue;
+    line = line.replace(/^[a-z]+:\/\//, "").replace(/\/.*$/, "").replace(/^www\./, "");
+    if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(line)) {
+      throw new Error(`Invalid domain: ${line}`);
+    }
+    domains.push(line);
+  }
+  return [...new Set(domains)];
+}
+
+function fmt(ms) {
+  const total = Math.max(0, Math.ceil(ms / 1000));
+  const m = Math.floor(total / 60);
+  const s = total % 60;
+  return `${m}:${String(s).padStart(2, "0")}`;
+}
+
+let timer = null;
+
+async function render() {
+  const { session, settings, blocklist } = await chrome.storage.local.get({
+    session: null,
+    settings: { sessionMin: 60, workMin: 30, breakMin: 5 },
+    blocklist: []
+  });
+  clearInterval(timer);
+
+  if (!session) {
+    $("idle-view").hidden = false;
+    $("running-view").hidden = true;
+    $("sessionMin").value = settings.sessionMin;
+    $("workMin").value = settings.workMin;
+    $("breakMin").value = settings.breakMin;
+    $("blocklist").value = blocklist.join("\n");
+    return;
+  }
+
+  $("idle-view").hidden = true;
+  $("running-view").hidden = false;
+  const update = () => {
+    const now = Date.now();
+    const current = session.schedule.find((p) => p.endsAt > now);
+    if (!current) {
+      render(); // session just ended while popup was open
+      return;
+    }
+    $("phase-label").textContent = current.phase === "working" ? "Focus time" : "Break";
+    $("countdown").textContent = fmt(current.endsAt - now);
+    const last = session.schedule[session.schedule.length - 1];
+    const ends = new Date(last.endsAt).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" });
+    $("session-info").textContent = `Session ends at ${ends}`;
+  };
+  update();
+  timer = setInterval(update, 1000);
+}
+
+$("start").addEventListener("click", async () => {
+  $("error").textContent = "";
+  const settings = {
+    sessionMin: parseInt($("sessionMin").value, 10),
+    workMin: parseInt($("workMin").value, 10),
+    breakMin: parseInt($("breakMin").value, 10)
+  };
+  if (Object.values(settings).some((v) => !Number.isInteger(v) || v < 1)) {
+    $("error").textContent = "All durations must be positive whole minutes.";
+    return;
+  }
+  if (settings.breakMin >= settings.workMin) {
+    $("error").textContent = "Break must be shorter than the work interval.";
+    return;
+  }
+  let blocklist;
+  try {
+    blocklist = parseDomains($("blocklist").value);
+  } catch (e) {
+    $("error").textContent = e.message;
+    return;
+  }
+  if (blocklist.length === 0) {
+    $("error").textContent = "Add at least one site to block.";
+    return;
+  }
+  await chrome.runtime.sendMessage({ cmd: "start", settings, blocklist });
+  render();
+});
+
+$("stop").addEventListener("click", () => {
+  $("stop-confirm").hidden = false;
+  $("stop-phrase").focus();
+});
+
+$("stop-phrase").addEventListener("input", () => {
+  $("stop-confirmed").disabled = $("stop-phrase").value.trim() !== "I give up";
+});
+
+$("stop-confirmed").addEventListener("click", async () => {
+  await chrome.runtime.sendMessage({ cmd: "stop" });
+  render();
+});
+
+render();
