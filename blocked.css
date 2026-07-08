@@ -30,7 +30,10 @@ p { font-size: 18px; color: #555; }
   #hero {
     background: #fff;
     border-radius: 50%;
-    padding: 20px;
+    /* border-radius clips at the padding-box edge, so the padding must be
+       big enough that the 130px image square fits inside the circle:
+       130 × √2 ≈ 184 ≤ 130 + 2×30 = 190 */
+    padding: 30px;
   }
   #origin { color: #666; }
   #origin a { color: #7fb3e8; }
