@@ -87,7 +87,7 @@ const DEFAULTS = {
 function notify(title, message) {
   chrome.notifications.create({
     type: "basic",
-    iconUrl: "icons/icon128.png",
+    iconUrl: "assets/icon-128.png",
     title,
     message
   });
