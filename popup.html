@@ -1,175 +1,280 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="en">
-<head>
-<meta charset="UTF-8">
-<title>Pomodoro Blocker</title>
-<link rel="stylesheet" href="theme.css">
-<link rel="stylesheet" href="popup.css">
-</head>
-<body>
+    <head>
+        <meta charset="UTF-8" />
+        <title>Pomodoro Blocker</title>
+        <link rel="stylesheet" href="theme.css" />
+        <link rel="stylesheet" href="popup.css" />
+    </head>
+    <body>
+        <!-- STATE 1: SETUP (shown when no session is running) -->
+        <div
+            id="setup-view"
+            style="display: flex; flex-direction: column; gap: 18px"
+        >
+            <div class="header">
+                <div class="brand">
+                    <img class="brand-icon" src="assets/stop.svg" alt="" />
+                    <div class="brand-title">
+                        <div class="brand-name">Pomodoro Blocker</div>
+                        <div class="brand-tagline">Ready when you are</div>
+                    </div>
+                </div>
+            </div>
 
-<!-- STATE 1: SETUP (shown when no session is running) -->
-<div id="setup-view" style="display: flex; flex-direction: column; gap: 18px;">
-
-  <div class="header">
-    <div class="brand">
-      <img class="brand-icon" src="assets/stop.svg" alt="">
-      <div class="brand-title">
-        <div class="brand-name">Pomodoro Blocker</div>
-        <div class="brand-tagline">Ready when you are</div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Each field: a stepper (− / value / +) plus quick-preset chips.
+            <!-- Each field: a stepper (− / value / +) plus quick-preset chips.
        Stepper .stepper carries data-field (the value's id) and data-step. -->
-  <div class="field">
-    <div class="field-label-row">
-      <label class="field-label">Session length</label>
-      <span class="field-hint">minutes</span>
-    </div>
-    <div class="stepper" data-field="session-length" data-step="15">
-      <button class="stepper-btn" data-dir="-1" type="button" aria-label="Decrease">−</button>
-      <div class="stepper-value">
-        <span class="stepper-num" id="session-length">60</span>
-        <span class="stepper-unit">min</span>
-      </div>
-      <button class="stepper-btn" data-dir="1" type="button" aria-label="Increase">+</button>
-    </div>
-    <div class="presets">
-      <button class="preset" data-preset="30">30</button>
-      <button class="preset" data-preset="60">60</button>
-      <button class="preset" data-preset="120">120</button>
-    </div>
-  </div>
+            <div class="field">
+                <div class="field-label-row">
+                    <label class="field-label">Session length</label>
+                    <span class="field-hint">minutes</span>
+                </div>
+                <div class="stepper" data-field="session-length" data-step="15">
+                    <button
+                        class="stepper-btn"
+                        data-dir="-1"
+                        type="button"
+                        aria-label="Decrease"
+                    >
+                        −
+                    </button>
+                    <div class="stepper-value">
+                        <span class="stepper-num" id="session-length">60</span>
+                        <span class="stepper-unit">min</span>
+                    </div>
+                    <button
+                        class="stepper-btn"
+                        data-dir="1"
+                        type="button"
+                        aria-label="Increase"
+                    >
+                        +
+                    </button>
+                </div>
+                <div class="presets">
+                    <button class="preset" data-preset="30">30</button>
+                    <button class="preset" data-preset="60">60</button>
+                    <button class="preset" data-preset="120">120</button>
+                </div>
+            </div>
 
-  <div class="field">
-    <div class="field-label-row">
-      <label class="field-label">Break every</label>
-      <span class="field-hint">minutes</span>
-    </div>
-    <div class="stepper" data-field="break-every" data-step="5">
-      <button class="stepper-btn" data-dir="-1" type="button" aria-label="Decrease">−</button>
-      <div class="stepper-value">
-        <span class="stepper-num" id="break-every">30</span>
-        <span class="stepper-unit">min</span>
-      </div>
-      <button class="stepper-btn" data-dir="1" type="button" aria-label="Increase">+</button>
-    </div>
-    <div class="presets">
-      <button class="preset" data-preset="25">25</button>
-      <button class="preset" data-preset="30">30</button>
-      <button class="preset" data-preset="50">50</button>
-    </div>
-  </div>
+            <div class="field">
+                <div class="field-label-row">
+                    <label class="field-label">Break every</label>
+                    <span class="field-hint">minutes</span>
+                </div>
+                <div class="stepper" data-field="break-every" data-step="5">
+                    <button
+                        class="stepper-btn"
+                        data-dir="-1"
+                        type="button"
+                        aria-label="Decrease"
+                    >
+                        −
+                    </button>
+                    <div class="stepper-value">
+                        <span class="stepper-num" id="break-every">30</span>
+                        <span class="stepper-unit">min</span>
+                    </div>
+                    <button
+                        class="stepper-btn"
+                        data-dir="1"
+                        type="button"
+                        aria-label="Increase"
+                    >
+                        +
+                    </button>
+                </div>
+                <div class="presets">
+                    <button class="preset" data-preset="25">25</button>
+                    <button class="preset" data-preset="30">30</button>
+                    <button class="preset" data-preset="50">50</button>
+                </div>
+            </div>
 
-  <div class="field">
-    <div class="field-label-row">
-      <label class="field-label">Break length</label>
-      <span class="field-hint">minutes</span>
-    </div>
-    <div class="stepper" data-field="break-length" data-step="5">
-      <button class="stepper-btn" data-dir="-1" type="button" aria-label="Decrease">−</button>
-      <div class="stepper-value">
-        <span class="stepper-num" id="break-length">5</span>
-        <span class="stepper-unit">min</span>
-      </div>
-      <button class="stepper-btn" data-dir="1" type="button" aria-label="Increase">+</button>
-    </div>
-    <div class="presets">
-      <button class="preset" data-preset="5">5</button>
-      <button class="preset" data-preset="15">15</button>
-    </div>
-  </div>
+            <div class="field">
+                <div class="field-label-row">
+                    <label class="field-label">Break length</label>
+                    <span class="field-hint">minutes</span>
+                </div>
+                <div class="stepper" data-field="break-length" data-step="5">
+                    <button
+                        class="stepper-btn"
+                        data-dir="-1"
+                        type="button"
+                        aria-label="Decrease"
+                    >
+                        −
+                    </button>
+                    <div class="stepper-value">
+                        <span class="stepper-num" id="break-length">5</span>
+                        <span class="stepper-unit">min</span>
+                    </div>
+                    <button
+                        class="stepper-btn"
+                        data-dir="1"
+                        type="button"
+                        aria-label="Increase"
+                    >
+                        +
+                    </button>
+                </div>
+                <div class="presets">
+                    <button class="preset" data-preset="5">5</button>
+                    <button class="preset" data-preset="15">15</button>
+                </div>
+            </div>
 
-  <!-- Computed summary — recomputed by popup.js from the three values. -->
-  <div class="summary">
-    <img class="summary-icon" src="assets/stop.svg" alt="">
-    <div class="summary-text"><b id="summary-blocks"></b> · <span id="summary-breaks"></span> · <span id="summary-total"></span></div>
-  </div>
+            <!-- Computed summary — recomputed by popup.js from the three values. -->
+            <div class="summary">
+                <div class="summary-text">
+                    <b id="summary-blocks"></b> ·
+                    <span id="summary-breaks"></span> ·
+                    <span id="summary-total"></span>
+                </div>
+            </div>
 
-  <div class="sites-note">Edit blocked sites in <a href="#" id="settings-link">settings</a>.</div>
+            <div class="sites-note">
+                Edit blocked sites in
+                <a href="#" id="settings-link">settings</a>.
+            </div>
 
-  <div id="error" class="error-msg"></div>
+            <div id="error" class="error-msg"></div>
 
-  <button class="btn-primary" id="start-btn">
-    <svg class="btn-play" width="13" height="14" viewBox="0 0 13 14" fill="none"><path d="M1 1.5L12 7L1 12.5V1.5Z" fill="#fff" stroke="#fff" stroke-width="1.5" stroke-linejoin="round"></path></svg>
-    Start session
-  </button>
-
-</div>
-
-<!-- STATE 2: RUNNING (shown while a session is active) -->
-<div id="running-view" style="display: none; flex-direction: column; gap: 16px;">
-
-  <div class="header">
-    <div class="brand">
-      <img class="brand-icon" src="assets/stop.svg" alt="">
-      <div class="brand-name">Pomodoro Blocker</div>
-    </div>
-    <span class="status-badge" id="status-badge">Focusing</span>
-  </div>
-
-  <div class="timer-wrap">
-    <div class="ring-click" id="ring-click" title="Pause / resume">
-      <svg width="164" height="164" viewBox="0 0 164 164">
-        <circle class="ring-track" cx="82" cy="82" r="74" fill="none" stroke-width="8"></circle>
-        <circle class="ring-progress" id="ring-progress" cx="82" cy="82" r="74" fill="none" stroke-width="8"></circle>
-      </svg>
-      <div class="timer-overlay">
-        <!-- Pause/play icons: Font Awesome Free (fontawesome.com), CC BY 4.0 -->
-        <div class="pause-mark" id="pause-mark">
-          <svg viewBox="0 0 320 512"><path d="M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z"/></svg>
+            <button class="btn-primary" id="start-btn">
+                <svg
+                    class="btn-play"
+                    width="13"
+                    height="14"
+                    viewBox="0 0 13 14"
+                    fill="none"
+                >
+                    <path
+                        d="M1 1.5L12 7L1 12.5V1.5Z"
+                        fill="#fff"
+                        stroke="#fff"
+                        stroke-width="1.5"
+                        stroke-linejoin="round"
+                    ></path>
+                </svg>
+                Start session
+            </button>
         </div>
-        <div class="timer-time" id="timer-time"></div>
-        <div class="timer-sub" id="timer-sub"></div>
-      </div>
-    </div>
-    <div class="timer-ends" id="timer-ends"></div>
-  </div>
 
-  <button class="btn-secondary btn-icon" id="pause-btn">
-    <svg class="icon icon-pause" viewBox="0 0 320 512"><path d="M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z"/></svg>
-    <svg class="icon icon-play" viewBox="0 0 384 512"><path d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.5 33.4 24.5 41.9s33.6 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"/></svg>
-    <span id="pause-btn-label">Pause</span>
-  </button>
+        <!-- STATE 2: RUNNING (shown while a session is active) -->
+        <div
+            id="running-view"
+            style="display: none; flex-direction: column; gap: 16px"
+        >
+            <div class="header">
+                <div class="brand">
+                    <img class="brand-icon" src="assets/stop.svg" alt="" />
+                    <div class="brand-name">Pomodoro Blocker</div>
+                </div>
+                <span class="status-badge" id="status-badge">Focusing</span>
+            </div>
 
-  <!-- Session timeline: one .seg-bar per work period, .seg-dot between them
+            <div class="timer-wrap">
+                <div class="ring-click" id="ring-click" title="Pause / resume">
+                    <svg width="164" height="164" viewBox="0 0 164 164">
+                        <circle
+                            class="ring-track"
+                            cx="82"
+                            cy="82"
+                            r="74"
+                            fill="none"
+                            stroke-width="8"
+                        ></circle>
+                        <circle
+                            class="ring-progress"
+                            id="ring-progress"
+                            cx="82"
+                            cy="82"
+                            r="74"
+                            fill="none"
+                            stroke-width="8"
+                        ></circle>
+                    </svg>
+                    <div class="timer-overlay">
+                        <!-- Pause/play icons: Font Awesome Free (fontawesome.com), CC BY 4.0 -->
+                        <div class="pause-mark" id="pause-mark">
+                            <svg viewBox="0 0 320 512">
+                                <path
+                                    d="M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z"
+                                />
+                            </svg>
+                        </div>
+                        <div class="timer-time" id="timer-time"></div>
+                        <div class="timer-sub" id="timer-sub"></div>
+                    </div>
+                </div>
+                <div class="timer-ends" id="timer-ends"></div>
+            </div>
+
+            <button class="btn-secondary btn-icon" id="pause-btn">
+                <svg class="icon icon-pause" viewBox="0 0 320 512">
+                    <path
+                        d="M48 64C21.5 64 0 85.5 0 112V400c0 26.5 21.5 48 48 48H80c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H48zm192 0c-26.5 0-48 21.5-48 48V400c0 26.5 21.5 48 48 48h32c26.5 0 48-21.5 48-48V112c0-26.5-21.5-48-48-48H240z"
+                    />
+                </svg>
+                <svg class="icon icon-play" viewBox="0 0 384 512">
+                    <path
+                        d="M73 39c-14.8-9.1-33.4-9.4-48.5-.9S0 62.6 0 80V432c0 17.4 9.5 33.4 24.5 41.9s33.6 8.1 48.5-.9L361 297c14.3-8.7 23-24.2 23-41s-8.7-32.2-23-41L73 39z"
+                    />
+                </svg>
+                <span id="pause-btn-label">Pause</span>
+            </button>
+
+            <!-- Session timeline: one .seg-bar per work period, .seg-dot between them
        for breaks — built by popup.js from the session schedule. -->
-  <div class="timeline">
-    <div class="timeline-head">
-      <span class="timeline-title">Session</span>
-      <span class="timeline-elapsed" id="timeline-elapsed"></span>
-    </div>
-    <div class="timeline-track" id="timeline-track"></div>
-  </div>
+            <div class="timeline">
+                <div class="timeline-head">
+                    <span class="timeline-title">Session</span>
+                    <span class="timeline-elapsed" id="timeline-elapsed"></span>
+                </div>
+                <div class="timeline-track" id="timeline-track"></div>
+            </div>
 
-  <div class="blocking-card">
-    <div class="blocking-head">
-      <div class="blocking-title" id="blocking-count"></div>
-      <a class="edit-sites-link" href="#" id="edit-sites">Edit</a>
-    </div>
-    <div class="blocking-list" id="blocking-list"></div>
-    <div class="sites-edit" id="sites-edit">
-      <textarea class="sites-textarea" id="sites-edit-input" rows="4"></textarea>
-      <div class="error-msg" id="sites-edit-error"></div>
-      <button class="btn-primary" id="sites-edit-apply">Apply</button>
-    </div>
-  </div>
+            <div class="blocking-card">
+                <div class="blocking-head">
+                    <div class="blocking-title" id="blocking-count"></div>
+                    <a class="edit-sites-link" href="#" id="edit-sites">Edit</a>
+                </div>
+                <div class="blocking-list" id="blocking-list"></div>
+                <div class="sites-edit" id="sites-edit">
+                    <textarea
+                        class="sites-textarea"
+                        id="sites-edit-input"
+                        rows="4"
+                    ></textarea>
+                    <div class="error-msg" id="sites-edit-error"></div>
+                    <button class="btn-primary" id="sites-edit-apply">
+                        Apply
+                    </button>
+                </div>
+            </div>
 
-  <button class="btn-secondary" id="end-btn">End session early</button>
+            <button class="btn-secondary" id="end-btn">
+                End session early
+            </button>
 
-  <div id="stop-confirm" class="stop-confirm">
-    <p>Type <b>I give up</b> to stop:</p>
-    <input class="text-input" id="stop-phrase" type="text" autocomplete="off">
-    <button class="btn-primary" id="stop-confirmed" disabled>Stop session</button>
-  </div>
+            <div id="stop-confirm" class="stop-confirm">
+                <p>Type <b>I give up</b> to stop:</p>
+                <input
+                    class="text-input"
+                    id="stop-phrase"
+                    type="text"
+                    autocomplete="off"
+                />
+                <button class="btn-primary" id="stop-confirmed" disabled>
+                    Stop session
+                </button>
+            </div>
 
-  <a class="settings-link" href="#">Settings</a>
+            <a class="settings-link" href="#">Settings</a>
+        </div>
 
-</div>
-
-<script src="domains.js"></script>
-<script src="popup.js"></script>
-</body>
+        <script src="domains.js"></script>
+        <script src="popup.js"></script>
+    </body>
 </html>
