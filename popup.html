@@ -7,9 +7,20 @@
 <body>
   <div id="idle-view" hidden>
     <h1>Pomodoro Blocker</h1>
-    <label>Session length (min) <input id="sessionMin" type="number" min="1"></label>
+    <label>Session length (min) <input id="sessionMin" type="number" min="1">
+      <span class="presets" data-target="sessionMin">
+        <button type="button" class="preset">30</button>
+        <button type="button" class="preset">60</button>
+        <button type="button" class="preset">120</button>
+      </span>
+    </label>
     <label>Break every (min) <input id="workMin" type="number" min="1"></label>
-    <label>Break length (min) <input id="breakMin" type="number" min="1"></label>
+    <label>Break length (min) <input id="breakMin" type="number" min="1">
+      <span class="presets" data-target="breakMin">
+        <button type="button" class="preset">5</button>
+        <button type="button" class="preset">15</button>
+      </span>
+    </label>
     <label>Blocked sites (one per line)
       <textarea id="blocklist" rows="5" placeholder="reddit.com"></textarea>
     </label>

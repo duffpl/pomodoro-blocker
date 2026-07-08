@@ -107,6 +107,12 @@ $("stop-confirmed").addEventListener("click", async () => {
   render();
 });
 
+document.querySelectorAll(".presets").forEach((group) => {
+  group.addEventListener("click", (e) => {
+    if (e.target.matches(".preset")) $(group.dataset.target).value = e.target.textContent;
+  });
+});
+
 $("open-options").addEventListener("click", (e) => {
   e.preventDefault();
   chrome.runtime.openOptionsPage();
