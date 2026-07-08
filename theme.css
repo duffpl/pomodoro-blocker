@@ -205,6 +205,14 @@
 }
 .settings-link:hover { color: var(--accent); }
 
+.setup-hint {
+  margin: 0;
+  font-size: 13px;
+  color: var(--text-faint);
+}
+.setup-hint a { color: var(--accent); text-decoration: none; }
+.setup-hint a:hover { text-decoration: underline; }
+
 .error-msg {
   font-size: 13px;
   color: var(--accent);

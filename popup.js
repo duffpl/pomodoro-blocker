@@ -47,7 +47,6 @@ async function render() {
     $("session-length").value = settings.sessionMin;
     $("break-every").value = settings.workMin;
     $("break-length").value = settings.breakMin;
-    $("blocked-sites").value = blocklist.join("\n");
     markActiveChips();
     return;
   }
@@ -163,15 +162,9 @@ $("start-btn").addEventListener("click", async () => {
     $("error").textContent = "Break must be shorter than the interval between breaks.";
     return;
   }
-  let blocklist;
-  try {
-    blocklist = parseDomains($("blocked-sites").value);
-  } catch (e) {
-    $("error").textContent = e.message;
-    return;
-  }
+  const { blocklist } = await chrome.storage.local.get({ blocklist: DEFAULT_BLOCKLIST });
   if (blocklist.length === 0) {
-    $("error").textContent = "Add at least one site to block.";
+    $("error").textContent = "Add at least one site to block in settings.";
     return;
   }
   const resp = await chrome.runtime.sendMessage({ cmd: "start", settings, blocklist })
@@ -202,10 +195,17 @@ $("stop-phrase").addEventListener("input", () => {
   $("stop-confirmed").disabled = $("stop-phrase").value.trim() !== "I give up";
 });
 
-$("stop-confirmed").addEventListener("click", async () => {
+$("stop-phrase").addEventListener("keydown", (e) => {
+  // Enter confirms the stop, but only once the phrase is valid (same guard
+  // as the button's disabled state).
+  if (e.key === "Enter" && !$("stop-confirmed").disabled) stopSession();
+});
+
+async function stopSession() {
   await chrome.runtime.sendMessage({ cmd: "stop" }).catch(() => {});
   render();
-});
+}
+$("stop-confirmed").addEventListener("click", stopSession);
 
 document.querySelectorAll(".num-input").forEach((input) => {
   const field = input.closest(".field");
@@ -222,7 +222,7 @@ document.querySelectorAll(".num-input").forEach((input) => {
   });
 });
 
-document.querySelectorAll(".settings-link").forEach((link) => {
+document.querySelectorAll(".settings-link, #blocklist-settings-link").forEach((link) => {
   link.addEventListener("click", (e) => {
     e.preventDefault();
     chrome.runtime.openOptionsPage();
