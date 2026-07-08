@@ -107,7 +107,8 @@ async function render() {
 
   const paused = !!session.pausedAt;
   $("pause-mark").classList.toggle("on", paused);
-  $("pause-btn").textContent = paused ? "Resume" : "Pause";
+  $("pause-btn").classList.toggle("paused", paused);
+  $("pause-btn-label").textContent = paused ? "Resume" : "Pause";
 
   const update = () => {
     // While paused the schedule is frozen at pausedAt, so render that instant.

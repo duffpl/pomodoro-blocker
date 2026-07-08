@@ -46,14 +46,30 @@ body {
   justify-content: center;
   gap: 2px;
 }
-.pause-mark {
-  display: none;
-  font-size: 15px;
-  font-weight: 700;
-  letter-spacing: 1px;
-  color: var(--accent);
-}
+.pause-mark { display: none; }
 .pause-mark.on { display: block; }
+.pause-mark svg {
+  width: 14px;
+  height: 14px;
+  fill: var(--accent);
+  display: block;
+}
+
+/* Icon button: pause icon normally, play icon while paused */
+.btn-icon {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+}
+.btn-icon .icon {
+  width: 12px;
+  height: 12px;
+  fill: currentColor;
+}
+#pause-btn .icon-play { display: none; }
+#pause-btn.paused .icon-pause { display: none; }
+#pause-btn.paused .icon-play { display: block; }
 .timer-time {
   font-size: 36px;
   font-weight: 700;
