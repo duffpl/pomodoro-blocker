@@ -38,6 +38,10 @@
   border-radius: 50%;
   background: var(--accent);
 }
+.brand-icon {
+  width: 34px;
+  height: auto;
+}
 .brand-name {
   font-size: 17px;
   font-weight: 700;
