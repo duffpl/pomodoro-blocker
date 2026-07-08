@@ -94,10 +94,7 @@ function updateBadge(current) {
   chrome.action.setBadgeText({ text: String(min) });
 }
 
-let stateGeneration = 0;
-
 async function startSession(settings, blocklist) {
-  stateGeneration++;
   const schedule = buildSchedule(Date.now(), settings);
   await chrome.storage.local.set({ session: { schedule }, settings, blocklist });
   await applyBlockRules(blocklist);
@@ -108,7 +105,6 @@ async function startSession(settings, blocklist) {
 }
 
 async function endSession(completed) {
-  stateGeneration++;
   await chrome.storage.local.set({ session: null });
   await clearBlockRules();
   await chrome.alarms.clear("phase-end");
@@ -121,9 +117,8 @@ async function endSession(completed) {
 // announce=true only when called from the phase-end alarm, so restarts and
 // worker wake-ups don't re-fire notifications.
 async function syncState({ announce = false } = {}) {
-  const gen = stateGeneration;
   const { session, blocklist } = await chrome.storage.local.get(DEFAULTS);
-  if (!session || gen !== stateGeneration) return;
+  if (!session) return;
   const current = currentPhase(session);
   if (!current) {
     await endSession(announce);
@@ -132,15 +127,14 @@ async function syncState({ announce = false } = {}) {
   if (current.phase === "working") {
     await applyBlockRules(blocklist);
     await sweepTabs(blocklist);
-    if (announce && gen === stateGeneration) notify("Back to work", "Break's over — sites are blocked again.");
+    if (announce) notify("Back to work", "Break's over — sites are blocked again.");
   } else {
     await clearBlockRules();
-    if (announce && gen === stateGeneration) {
+    if (announce) {
       const min = Math.round((current.endsAt - Date.now()) / 60000);
       notify("Break time", `Sites unblocked for ${min} minutes.`);
     }
   }
-  if (gen !== stateGeneration) return;
   chrome.alarms.create("phase-end", { when: current.endsAt });
   chrome.alarms.create("tick", { periodInMinutes: 1 });
   updateBadge(current);
@@ -148,9 +142,18 @@ async function syncState({ announce = false } = {}) {
 
 // ---- events --------------------------------------------------------------
 
+let opChain = Promise.resolve();
+// Serialize state-mutating operations so a phase-end sync and a start/stop
+// message can never interleave at an await and corrupt block-rule/alarm state.
+function serialize(fn) {
+  const run = opChain.then(fn, fn);
+  opChain = run.catch(() => {});
+  return run;
+}
+
 chrome.alarms.onAlarm.addListener((alarm) => {
   if (alarm.name === "phase-end") {
-    syncState({ announce: true });
+    serialize(() => syncState({ announce: true }));
   } else if (alarm.name === "tick") {
     chrome.storage.local
       .get(DEFAULTS)
@@ -158,17 +161,13 @@ chrome.alarms.onAlarm.addListener((alarm) => {
   }
 });
 
-chrome.runtime.onStartup.addListener(() => syncState());
-chrome.runtime.onInstalled.addListener(() => syncState());
+chrome.runtime.onStartup.addListener(() => serialize(() => syncState()));
+chrome.runtime.onInstalled.addListener(() => serialize(() => syncState()));
 
 chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
-  (async () => {
-    if (msg.cmd === "start") {
-      await startSession(msg.settings, msg.blocklist);
-    } else if (msg.cmd === "stop") {
-      await endSession(false);
-    }
-    sendResponse({ ok: true });
-  })();
+  serialize(async () => {
+    if (msg.cmd === "start") await startSession(msg.settings, msg.blocklist);
+    else if (msg.cmd === "stop") await endSession(false);
+  }).then(() => sendResponse({ ok: true }));
   return true; // keep the message channel open for the async response
 });
