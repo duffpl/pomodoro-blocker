@@ -1,21 +1,5 @@
 const $ = (id) => document.getElementById(id);
 
-// Normalizes lines to lowercase bare domains; throws on entries that don't
-// look like a domain after stripping scheme/path/leading www.
-function parseDomains(text) {
-  const domains = [];
-  for (let line of text.split("\n")) {
-    line = line.trim().toLowerCase();
-    if (!line) continue;
-    line = line.replace(/^[a-z]+:\/\//, "").replace(/\/.*$/, "").replace(/^www\./, "");
-    if (!/^[a-z0-9.-]+\.[a-z]{2,}$/.test(line)) {
-      throw new Error(`Invalid domain: ${line}`);
-    }
-    domains.push(line);
-  }
-  return [...new Set(domains)];
-}
-
 function fmt(ms) {
   const total = Math.max(0, Math.ceil(ms / 1000));
   const m = Math.floor(total / 60);
@@ -121,6 +105,11 @@ $("stop-phrase").addEventListener("input", () => {
 $("stop-confirmed").addEventListener("click", async () => {
   await chrome.runtime.sendMessage({ cmd: "stop" }).catch(() => {});
   render();
+});
+
+$("open-options").addEventListener("click", (e) => {
+  e.preventDefault();
+  chrome.runtime.openOptionsPage();
 });
 
 render();

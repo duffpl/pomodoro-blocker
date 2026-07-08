@@ -114,6 +114,17 @@ async function endSession(completed) {
   if (completed) notify("Session complete", "Nice work. Sites are unblocked.");
 }
 
+// Blocklist edits from the options page apply live: if a work phase is
+// running, re-install the rules and sweep tabs right away.
+async function setBlocklist(blocklist) {
+  await chrome.storage.local.set({ blocklist });
+  const { session } = await chrome.storage.local.get(DEFAULTS);
+  if (currentPhase(session)?.phase === "working") {
+    await applyBlockRules(blocklist);
+    await sweepTabs(blocklist);
+  }
+}
+
 // Idempotent: recomputes everything from persisted absolute timestamps.
 // announce=true only when called from the phase-end alarm, so restarts and
 // worker wake-ups don't re-fire notifications.
@@ -169,6 +180,7 @@ chrome.runtime.onMessage.addListener((msg, _sender, sendResponse) => {
   serialize(async () => {
     if (msg.cmd === "start") await startSession(msg.settings, msg.blocklist);
     else if (msg.cmd === "stop") await endSession(false);
+    else if (msg.cmd === "set-blocklist") await setBlocklist(msg.blocklist);
   }).then(
     () => sendResponse({ ok: true }),
     (e) => sendResponse({ ok: false, error: String(e) })

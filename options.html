@@ -1,0 +1,28 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Pomodoro Blocker — Settings</title>
+  <link rel="stylesheet" href="options.css">
+</head>
+<body>
+  <main>
+    <h1>Pomodoro Blocker — Settings</h1>
+
+    <label>Blocked sites (one per line, domain matches all subdomains)
+      <textarea id="blocklist" rows="12" placeholder="reddit.com"></textarea>
+    </label>
+
+    <label>Block page message (leave empty for the default)
+      <input id="message" type="text" placeholder="Nope. Not yet." maxlength="120">
+    </label>
+
+    <button id="save">Save</button>
+    <div id="status"></div>
+
+    <p class="hint">Changes apply immediately — also to a running session.</p>
+  </main>
+  <script src="domains.js"></script>
+  <script src="options.js"></script>
+</body>
+</html>

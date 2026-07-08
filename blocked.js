@@ -1,5 +1,9 @@
 async function update() {
-  const { session } = await chrome.storage.local.get({ session: null });
+  const { session, blockMessage } = await chrome.storage.local.get({
+    session: null,
+    blockMessage: ""
+  });
+  document.getElementById("headline").textContent = blockMessage || "Nope. Not yet.";
   const el = document.getElementById("detail");
   if (!session) {
     el.textContent = "No session running. You're free to go.";
