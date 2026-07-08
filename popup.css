@@ -107,13 +107,6 @@ body {
   border-radius: 11px;
   padding: 11px 13px;
 }
-.summary-icon {
-  width: 20px;
-  height: 20px;
-  display: block;
-  flex: none;
-  opacity: 0.9;
-}
 .summary-text {
   font-size: 13px;
   color: var(--text-secondary);
