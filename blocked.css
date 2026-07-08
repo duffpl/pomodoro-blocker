@@ -12,12 +12,24 @@ body {
   font-family: system-ui, sans-serif;
 }
 main { text-align: center; }
+/* The white circle is a wrapper, NOT border-radius on the img: border-radius
+   clips a replaced element's content to an inner curve shrunk by the padding
+   (radius − padding), so an img always ends up clipped to an inscribed
+   circle. A parent's border-radius never clips children without
+   overflow: hidden. */
+#hero-wrap {
+  width: 190px;
+  height: 190px;
+  margin: 0 auto 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 #hero {
   width: 130px;
   height: 130px;
   object-fit: contain;
   display: block;
-  margin: 0 auto 28px;
 }
 h1 { font-size: 56px; margin: 0 0 16px; }
 p { font-size: 18px; color: #555; }
@@ -27,13 +39,10 @@ p { font-size: 18px; color: #555; }
 @media (prefers-color-scheme: dark) {
   body { background: #111; color: #eee; }
   p { color: #aaa; }
-  #hero {
+  #hero-wrap {
     background: #fff;
     border-radius: 50%;
-    /* border-radius clips at the padding-box edge, so the padding must be
-       big enough that the 130px image square fits inside the circle:
-       130 × √2 ≈ 184 ≤ 130 + 2×30 = 190 */
-    padding: 30px;
+    /* image diagonal must fit the circle: 130 × √2 ≈ 184 ≤ 190 */
   }
   #origin { color: #666; }
   #origin a { color: #7fb3e8; }
